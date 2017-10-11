@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 public class DiagnosisRepository {
 
+    public static final String OTHER_DIAGNOSIS_CODE = "Other";
     private List<Diagnosis> diagnosisList = null;
     private static DiagnosisRepository ourInstance = new DiagnosisRepository();
 
@@ -49,10 +50,13 @@ public class DiagnosisRepository {
     }
 
     public String find(String diagnosisCode) {
+        if(diagnosisCode==null){
+            return OTHER_DIAGNOSIS_CODE;
+        }
         if (diagnosisCode.matches("[A-Za-z0-9]+")) {
             return (Character.isAlphabetic(diagnosisCode.charAt(0)))
                     ? Character.toString(diagnosisCode.charAt(0))
-                    : "Other";
+                    : OTHER_DIAGNOSIS_CODE;
         } else {
             int dCode = Integer.parseInt(diagnosisCode.substring(0, 3));
             List<Diagnosis> filteredList = diagnosisList.stream()
@@ -60,7 +64,7 @@ public class DiagnosisRepository {
                             && Integer.parseInt(d.getHighICDCode()) >= dCode)
                     .collect(Collectors.toList());
 
-            return (filteredList.size() > 0) ? filteredList.get(0).getDiagnosis() : "Other";
+            return (filteredList.size() > 0) ? filteredList.get(0).getDiagnosis() : OTHER_DIAGNOSIS_CODE;
         }
     }
 }

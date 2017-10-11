@@ -23,8 +23,9 @@ public class StreamGenerator {
                     new ClaimDataStreamConfigurator(configReader.getProperty(INPUT_DATA_KEY),
                             configReader.getProperty(OUTPUT_FILE));
             claimDataStreamConfigurator.createDataStreamConfiguration();
+            claimDataStreamConfigurator.createJson();
 
-        } catch (IOException | IllegalArgumentException e) {
+        } catch (IOException | IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }

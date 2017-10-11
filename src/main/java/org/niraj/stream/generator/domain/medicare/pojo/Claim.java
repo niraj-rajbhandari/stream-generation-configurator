@@ -45,28 +45,28 @@ public class Claim {
      * Claim Diagnosis Code 1-8
      */
     @CsvBindByName(column = "ICD9_DGNS_CD_1")
-    private String claimDiagnosisCode1;
+    private String priorDiagnosisCode1;
 
     @CsvBindByName(column = "ICD9_DGNS_CD_2")
-    private String claimDiagnosisCode2;
+    private String priorDiagnosisCode2;
 
     @CsvBindByName(column = "ICD9_DGNS_CD_3")
-    private String claimDiagnosisCode3;
+    private String priorDiagnosisCode3;
 
     @CsvBindByName(column = "ICD9_DGNS_CD_4")
-    private String claimDiagnosisCode4;
+    private String priorDiagnosisCode4;
 
     @CsvBindByName(column = "ICD9_DGNS_CD_5")
-    private String claimDiagnosisCode5;
+    private String priorDiagnosisCode5;
 
     @CsvBindByName(column = "ICD9_DGNS_CD_6")
-    private String claimDiagnosisCode6;
+    private String priorDiagnosisCode6;
 
     @CsvBindByName(column = "ICD9_DGNS_CD_7")
-    private String claimDiagnosisCode7;
+    private String priorDiagnosisCode7;
 
     @CsvBindByName(column = "ICD9_DGNS_CD_8")
-    private String claimDiagnosisCode8;
+    private String priorDiagnosisCode8;
 
 
     /**
@@ -283,68 +283,68 @@ public class Claim {
         this.endDate = endDate;
     }
 
-    public String getClaimDiagnosisCode1() {
-        return claimDiagnosisCode1;
+    public String getPriorDiagnosisCode1() {
+        return priorDiagnosisCode1;
     }
 
-    public void setClaimDiagnosisCode1(String claimDiagnosisCode1) {
-        this.claimDiagnosisCode1 = claimDiagnosisCode1;
+    public void setPriorDiagnosisCode1(String priorDiagnosisCode1) {
+        this.priorDiagnosisCode1 = priorDiagnosisCode1;
     }
 
-    public String getClaimDiagnosisCode2() {
-        return claimDiagnosisCode2;
+    public String getPriorDiagnosisCode2() {
+        return priorDiagnosisCode2;
     }
 
-    public void setClaimDiagnosisCode2(String claimDiagnosisCode2) {
-        this.claimDiagnosisCode2 = claimDiagnosisCode2;
+    public void setPriorDiagnosisCode2(String priorDiagnosisCode2) {
+        this.priorDiagnosisCode2 = priorDiagnosisCode2;
     }
 
-    public String getClaimDiagnosisCode3() {
-        return claimDiagnosisCode3;
+    public String getPriorDiagnosisCode3() {
+        return priorDiagnosisCode3;
     }
 
-    public void setClaimDiagnosisCode3(String claimDiagnosisCode3) {
-        this.claimDiagnosisCode3 = claimDiagnosisCode3;
+    public void setPriorDiagnosisCode3(String priorDiagnosisCode3) {
+        this.priorDiagnosisCode3 = priorDiagnosisCode3;
     }
 
-    public String getClaimDiagnosisCode4() {
-        return claimDiagnosisCode4;
+    public String getPriorDiagnosisCode4() {
+        return priorDiagnosisCode4;
     }
 
-    public void setClaimDiagnosisCode4(String claimDiagnosisCode4) {
-        this.claimDiagnosisCode4 = claimDiagnosisCode4;
+    public void setPriorDiagnosisCode4(String priorDiagnosisCode4) {
+        this.priorDiagnosisCode4 = priorDiagnosisCode4;
     }
 
-    public String getClaimDiagnosisCode5() {
-        return claimDiagnosisCode5;
+    public String getPriorDiagnosisCode5() {
+        return priorDiagnosisCode5;
     }
 
-    public void setClaimDiagnosisCode5(String claimDiagnosisCode5) {
-        this.claimDiagnosisCode5 = claimDiagnosisCode5;
+    public void setPriorDiagnosisCode5(String priorDiagnosisCode5) {
+        this.priorDiagnosisCode5 = priorDiagnosisCode5;
     }
 
-    public String getClaimDiagnosisCode6() {
-        return claimDiagnosisCode6;
+    public String getPriorDiagnosisCode6() {
+        return priorDiagnosisCode6;
     }
 
-    public void setClaimDiagnosisCode6(String claimDiagnosisCode6) {
-        this.claimDiagnosisCode6 = claimDiagnosisCode6;
+    public void setPriorDiagnosisCode6(String priorDiagnosisCode6) {
+        this.priorDiagnosisCode6 = priorDiagnosisCode6;
     }
 
-    public String getClaimDiagnosisCode7() {
-        return claimDiagnosisCode7;
+    public String getPriorDiagnosisCode7() {
+        return priorDiagnosisCode7;
     }
 
-    public void setClaimDiagnosisCode7(String claimDiagnosisCode7) {
-        this.claimDiagnosisCode7 = claimDiagnosisCode7;
+    public void setPriorDiagnosisCode7(String priorDiagnosisCode7) {
+        this.priorDiagnosisCode7 = priorDiagnosisCode7;
     }
 
-    public String getClaimDiagnosisCode8() {
-        return claimDiagnosisCode8;
+    public String getPriorDiagnosisCode8() {
+        return priorDiagnosisCode8;
     }
 
-    public void setClaimDiagnosisCode8(String claimDiagnosisCode8) {
-        this.claimDiagnosisCode8 = claimDiagnosisCode8;
+    public void setPriorDiagnosisCode8(String priorDiagnosisCode8) {
+        this.priorDiagnosisCode8 = priorDiagnosisCode8;
     }
 
     public String getPhysician1() {
@@ -768,8 +768,11 @@ public class Claim {
         return this.getAttributeValues("physician");
     }
 
-    public Map<Integer, String> getClaimDiagnosisCodeList() {
-        return this.getAttributeValues("claimDiagnosisCode");
+    public Map<Integer, String> getPriorDiagnosisCodeList() throws FileNotFoundException {
+        String statusCode = ConfigReader.getInstance().getProperty(CLAIM_CODE_INDEX);
+        return this.getAttributeValues("priorDiagnosisCode").entrySet().stream()
+                .filter(e -> e.getValue().startsWith(statusCode))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Map<Integer, String> getHCPCSCodeList() {
@@ -784,8 +787,8 @@ public class Claim {
         return this.getAttributeValues("lineDiagnosisCode");
     }
 
-    public boolean claimCodeExists() {
-        return (this.getClaimDiagnosisCodeList().size() > 0);
+    public boolean claimCodeExists() throws FileNotFoundException {
+        return (this.getPriorDiagnosisCodeList().size() > 0);
     }
 
     @Override
@@ -808,17 +811,14 @@ public class Claim {
         }
 
         return attributes.entrySet().stream()
-                .filter(e-> filterAttributes(e.getValue()))
+                .filter(e -> filterAttributes(e.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> getAttributeValue(e.getValue())));
     }
 
     private boolean filterAttributes(Field field) {
         try {
-            String statusCode = ConfigReader.getInstance().getProperty(CLAIM_CODE_INDEX);
-            return (field.get(this) != null)
-                    && field.get(this).toString().startsWith(statusCode);
-
-        } catch (IllegalAccessException | FileNotFoundException e) {
+            return (field.get(this) != null);
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
             return false;
         }

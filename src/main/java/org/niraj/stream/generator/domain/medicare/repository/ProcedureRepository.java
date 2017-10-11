@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProcedureRepository {
+
+    public static final String OTHER_PROCEDURE_CODE = "Other";
+    public static final String CPT_II_PROCEDURE_CODE = "Cpt-II";
+
     private static ProcedureRepository ourInstance = new ProcedureRepository();
 
     private List<Procedure> procedureList = null;
@@ -155,15 +159,17 @@ public class ProcedureRepository {
     }
 
     public String find(String procedureCode) {
-        if (procedureCode.matches("[A-Za-z-0-9]+")) {
+        if (procedureCode == null) {
+            return OTHER_PROCEDURE_CODE;
+        } else if (procedureCode.matches("[A-Za-z-0-9]+")) {
             if (Character.isAlphabetic(procedureCode.charAt(0))) {
                 return Character.toString(procedureCode.charAt(0));
-            } else if (Character.isAlphabetic(procedureCode.charAt(4))) {
-                return Character.toString(procedureCode.charAt(4));
+            } else if (procedureCode.length() > 4 && Character.isAlphabetic(procedureCode.charAt(4))) {
+                return CPT_II_PROCEDURE_CODE;
 //            } else if (Character.isAlphabetic(procedureCode.charAt(3))) {
-//                return "Other";
+//                return OTHER_PROCEDURE_CODE;
             } else {
-                return "Other";
+                return OTHER_PROCEDURE_CODE;
             }
         } else {
             List<Procedure> filteredList = procedureList.stream()
@@ -171,7 +177,7 @@ public class ProcedureRepository {
                             && Integer.parseInt(procedureCode) <= Integer.parseInt(p.getHighHCPCSCode()))
                     .collect(Collectors.toList());
 
-            return (filteredList.size() > 0) ? filteredList.get(0).getProcedure() : "Other";
+            return (filteredList.size() > 0) ? filteredList.get(0).getProcedure() : OTHER_PROCEDURE_CODE;
         }
     }
 }

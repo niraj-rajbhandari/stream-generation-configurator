@@ -1,18 +1,13 @@
 package org.niraj.stream.generator.domain.medicare.claim;
 
-import org.niraj.stream.generator.configuration.ConfigReader;
 import org.niraj.stream.generator.configuration.DataStreamConfigurator;
 import org.niraj.stream.generator.domain.medicare.pojo.Claim;
-import org.niraj.stream.generator.domain.medicare.pojo.Patient;
-import org.niraj.stream.generator.domain.medicare.repository.PatientRepository;
 import org.niraj.stream.generator.helper.Helper;
-import org.niraj.stream.generator.pojo.StreamConfiguration;
 
 import java.io.FileNotFoundException;
 import java.util.Iterator;
 
 public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
-
 
     public ClaimDataStreamConfigurator(String inputFile, String outputFile)
             throws FileNotFoundException {
@@ -23,16 +18,14 @@ public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
     }
 
     @Override
-    public void createDataStreamConfiguration() throws FileNotFoundException, IllegalArgumentException {
-        StreamConfiguration configuration = new StreamConfiguration();
+    public void createDataStreamConfiguration()
+            throws FileNotFoundException, IllegalArgumentException, IllegalAccessException {
         ClaimGraphGenerator graphGenerator = ClaimGraphGenerator.getInstance();
-        PatientRepository patientRepo = PatientRepository.getInstance();
-        Iterator<Claim> csvIterator = this.csvParser.iterator();
-        int count = 0;
-        while (csvIterator.hasNext() && count < 10) {
-            Claim cp = csvIterator.next();
-
+        Iterator<Claim> csvIterator = this.getCsvParser().iterator();
+        while (csvIterator.hasNext()) {
+            Claim claim = csvIterator.next();
+            graphGenerator.createGraphStream(claim);
         }
-        // configuration.setPatterns(graphGenerator.getGraphStream());
+        this.getConfiguration().setPatterns(graphGenerator.getGraphStream());
     }
 }
