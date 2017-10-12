@@ -1,13 +1,13 @@
 package org.niraj.stream.generator.configuration;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.niraj.stream.generator.helper.Helper;
 import org.niraj.stream.generator.io.CsvParser;
 import org.niraj.stream.generator.pojo.StreamConfiguration;
 
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
 public abstract class DataStreamConfigurator<T> {
@@ -55,8 +55,9 @@ public abstract class DataStreamConfigurator<T> {
             throws FileNotFoundException, IllegalArgumentException, IllegalAccessException;
 
     public void createJson() throws IOException {
-        Gson gson = new Gson();
-        FileWriter jsonWriter = new FileWriter(Helper.getInstance().getAbsolutePath(outputFile));
-        gson.toJson(configuration,jsonWriter);
+        ObjectMapper jsonMapper = new ObjectMapper();
+//        jsonMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        File output = new File(Helper.getInstance().getAbsolutePath(outputFile));
+        jsonMapper.writeValue(output, this.configuration);
     }
 }

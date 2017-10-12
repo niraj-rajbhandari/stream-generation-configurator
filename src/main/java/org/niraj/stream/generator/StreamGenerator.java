@@ -4,7 +4,6 @@ import org.niraj.stream.generator.configuration.ConfigReader;
 import org.niraj.stream.generator.configuration.DataStreamConfigurator;
 import org.niraj.stream.generator.domain.medicare.claim.ClaimDataStreamConfigurator;
 import org.niraj.stream.generator.domain.medicare.pojo.Claim;
-import org.niraj.stream.generator.exception.PropertyNotFoundException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ public class StreamGenerator {
     private static final String OUTPUT_FILE = "output-file";
 
     public static void main(String... args) {
-
         try {
             ConfigReader configReader = ConfigReader.getInstance();
             DataStreamConfigurator<Claim> claimDataStreamConfigurator =

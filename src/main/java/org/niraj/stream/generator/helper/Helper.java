@@ -27,7 +27,9 @@ public class Helper {
     }
 
     public String getTimeInFuture(String format, int timeToAdd) {
-        long currentMillis = Calendar.getInstance().getTimeInMillis();
-        return new SimpleDateFormat(format).format(new Date(currentMillis + (timeToAdd * MINUTE_IN_MILLIS)));
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE,timeToAdd);
+
+        return new SimpleDateFormat(format).format(calendar.getTime());
     }
 }

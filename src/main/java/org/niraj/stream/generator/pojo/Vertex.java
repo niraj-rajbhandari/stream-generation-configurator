@@ -1,6 +1,6 @@
 package org.niraj.stream.generator.pojo;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
@@ -8,7 +8,7 @@ public class Vertex {
 
     private String id;
 
-    @SerializedName("new")
+    @JsonProperty("new")
     private boolean isNew;
 
     private Map<String, String> attributes;

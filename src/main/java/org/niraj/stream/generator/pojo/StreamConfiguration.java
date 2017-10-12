@@ -18,7 +18,7 @@ public class StreamConfiguration {
     public StreamConfiguration() {
         numStreams = 1;
         secondsPerUnitTime = 1;
-        startTime = Helper.getInstance().getTimeInFuture("YYYY-MM-DD HH:MM:SS", 10);
+        startTime = Helper.getInstance().getTimeInFuture("yyyy-MM-dd HH:mm:ss", 10);
         duration = 10;
         outputTimeFormat = "units";
         outputFilePrefix = "carrier_claim_";

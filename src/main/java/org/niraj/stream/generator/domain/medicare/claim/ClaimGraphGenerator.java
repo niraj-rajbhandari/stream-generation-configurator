@@ -47,7 +47,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
         this.patientRepo = PatientRepository.getInstance();
         this.diagnosisRepo = DiagnosisRepository.getInstance();
         this.procedureRepo = ProcedureRepository.getInstance();
-        this.vertexList =  new ArrayList<>();
+        this.vertexList = new ArrayList<>();
         this.edgeList = new ArrayList<>();
     }
 
@@ -90,18 +90,19 @@ public class ClaimGraphGenerator extends GraphGenerator {
         return graphStreamPatterns;
     }
 
-    public void createGraphStream(Claim claim) throws FileNotFoundException {
+    public int createGraphStream(Claim claim) throws FileNotFoundException {
         String subGraphId;
 
         Patient patient = new Patient();
         patient.setPatientId(claim.getPatientId());
 
         if (claim.claimCodeExists() && patientRepo.findAll().contains(patient)) {
-            if (previousPatient!=null && previousPatient.equals(claim.getPatientId())) {
+            if (previousPatient != null && previousPatient.equals(claim.getPatientId())) {
                 subGraphId = this.patientsParsed.get(claim.getPatientId());
                 this.visitCount++;
             } else {
-                previousPatient = claim.getPatientId();
+                this.visitCount = 1;
+                this.previousPatient = claim.getPatientId();
                 this.patientsParsed.put(claim.getPatientId(),
                         Integer.toString(this.patientsParsed.size() + 1));
                 subGraphId = Integer.toString(this.patientsParsed.size());
@@ -119,6 +120,8 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
             createDiagnosisPhysicianGraph(claim, carrierVertex, patientVertex, subGraphId);
         }
+
+        return patientsParsed.size();
     }
 
     private void resetCounters() {
@@ -278,7 +281,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
     private Vertex createPhysicianVertex(String physicianId, String graphId) {
         Map<String, String> physicianVertexAttributes =
                 this.getVertexAttribute(ClaimGraphConstants.PHYSICIAN_VERTEX_LABEL, graphId);
-        physicianVertexAttributes.put(COMMENT_ATTRIBUTE_INDEX, "Provider Physician " + physicianId);
+        physicianVertexAttributes.put(COMMENT_ATTRIBUTE_INDEX, "//Provider Physician " + physicianId);
         physicianVertexAttributes.put(ID_INDEX, physicianId);
 
         Vertex physicianVertex = createVertex(physicianVertexAttributes);

@@ -1,6 +1,6 @@
 package org.niraj.stream.generator.pojo;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ public class Edge {
     private int minOffset;
     private int maxOffset;
 
-    @SerializedName("streamNum")
+    @JsonProperty("streamNum")
     private int streamId;
 
     private Map<String,String> attributes;
