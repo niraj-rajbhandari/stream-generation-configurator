@@ -30,10 +30,10 @@ public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
         while (csvIterator.hasNext() && checkSize) {
             Claim claim = csvIterator.next();
             graphGenerator.createGraphStream(claim);
-            checkSize =
-                    graphGenerator.getPatientsParsed().size() < Integer.parseInt(ConfigReader.getInstance().getProperty("graph-size"));
+//            checkSize =
+//                    graphGenerator.getPatientsParsed().size() < Integer.parseInt(ConfigReader.getInstance().getProperty("graph-size"));
 //            System.out.println("checkSize: " + checkSize);
-//                    checkSize = true;
+            checkSize = true;
         }
         this.getConfiguration().setPatterns(graphGenerator.getGraphStream());
     }
