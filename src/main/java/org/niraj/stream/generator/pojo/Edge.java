@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
-public class Edge {
+public class Edge extends GraphProperty {
 
     private String id;
     private String source;

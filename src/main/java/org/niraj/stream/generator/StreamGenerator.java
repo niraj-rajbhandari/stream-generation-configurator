@@ -8,6 +8,7 @@ import org.niraj.stream.generator.domain.medicare.pojo.Claim;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public class StreamGenerator {
 
@@ -21,9 +22,12 @@ public class StreamGenerator {
                     new ClaimDataStreamConfigurator(configReader.getProperty(INPUT_DATA_KEY),
                             configReader.getProperty(OUTPUT_FILE));
             claimDataStreamConfigurator.createDataStreamConfiguration();
+
+            System.out.println("total items: " + claimDataStreamConfigurator.getConfiguration().getPatterns().stream()
+                    .mapToInt(p -> (p.getVertices().size() + p.getEdges().size())).sum());
             claimDataStreamConfigurator.createJson();
 
-        } catch (IOException | IllegalArgumentException | IllegalAccessException e) {
+        } catch (IOException | IllegalArgumentException | IllegalAccessException | TimeoutException e) {
             e.printStackTrace();
         }
     }

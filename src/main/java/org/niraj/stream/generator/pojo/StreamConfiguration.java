@@ -21,7 +21,7 @@ public class StreamConfiguration {
         startTime = Helper.getInstance().getTimeInFuture("yyyy-MM-dd HH:mm:ss", 10);
         duration = 10;
         outputTimeFormat = "units";
-        outputFilePrefix = "carrier_claim_";
+        outputFilePrefix = "carrier-claim-";
     }
 
     public int getNumStreams() {

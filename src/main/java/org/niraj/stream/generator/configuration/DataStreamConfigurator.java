@@ -1,7 +1,6 @@
 package org.niraj.stream.generator.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.niraj.stream.generator.helper.Helper;
 import org.niraj.stream.generator.io.CsvParser;
 import org.niraj.stream.generator.pojo.StreamConfiguration;
@@ -9,6 +8,7 @@ import org.niraj.stream.generator.pojo.StreamConfiguration;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 public abstract class DataStreamConfigurator<T> {
 
@@ -52,7 +52,7 @@ public abstract class DataStreamConfigurator<T> {
     }
 
     public abstract void createDataStreamConfiguration()
-            throws FileNotFoundException, IllegalArgumentException, IllegalAccessException;
+            throws IOException, IllegalArgumentException, IllegalAccessException, TimeoutException;
 
     public void createJson() throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
-public class Vertex {
+public class Vertex extends GraphProperty{
 
     private String id;
 
@@ -29,6 +29,9 @@ public class Vertex {
         isNew = aNew;
     }
 
+    public Vertex(){
+        setNew(true);
+    }
     public Map<String, String> getAttributes() {
         return attributes;
     }
