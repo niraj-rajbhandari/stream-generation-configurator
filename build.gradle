@@ -1,5 +1,5 @@
 group 'edu.tntech.graph'
-version '1.0'
+//version '1.0'
 
 apply plugin: 'java'
 
@@ -21,9 +21,10 @@ sourceSets {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.niraj.stream.generator.StreamGenerator'
+                'Main-Class': 'org.niraj.stream.parser.GraphParser'
         )
     }
+    baseName 'graph-parser'
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
@@ -31,7 +32,7 @@ jar {
 
 task copyJar(type: Copy) {
     from jar // here it automatically reads jar file produced from jar task
-    into "/Users/destroyed/workspace/research/stream-generator-app/"
+    into "/Users/destroyed/workspace/research/gbad-stream/"
 }
 
 task buildApp (dependsOn: [clean, jar, copyJar])
