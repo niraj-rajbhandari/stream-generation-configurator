@@ -1,12 +1,16 @@
 package org.niraj.stream.parser.helper;
 
+import org.niraj.stream.parser.configuration.ConfigReader;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Helper {
+
+    private static final String DEBUG_MODE_PROPERTY = "debug";
     private static String DATA_DIRECTORY = "data";
-    public static final int MINUTE_IN_MILLIS = 60000;
     private static Helper instance = null;
 
     public static Helper getInstance() {
@@ -35,5 +39,10 @@ public class Helper {
         calendar.add(Calendar.MINUTE, timeToAdd);
 
         return new SimpleDateFormat(format).format(calendar.getTime());
+    }
+
+    public boolean isDebugMode(ConfigReader config) {
+        String debug = config.getProperty(DEBUG_MODE_PROPERTY);
+        return new Boolean(debug);
     }
 }
