@@ -12,9 +12,11 @@ import java.util.concurrent.TimeoutException;
 
 public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
 
+    private ConfigReader config;
     public ClaimDataStreamConfigurator(String inputFile, String outputFile)
             throws FileNotFoundException {
-        this.setInputFile(Helper.getInstance().getAbsolutePath(inputFile,true));
+        config = ConfigReader.getInstance();
+        this.setInputFile(Helper.getInstance().getAbsolutePath(inputFile, true));
         this.setOutputFile(outputFile);
 
         this.setCsvParser(Claim.class);
@@ -30,10 +32,16 @@ public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
         while (csvIterator.hasNext() && checkSize) {
             Claim claim = csvIterator.next();
             graphGenerator.createGraphStream(claim);
-//            checkSize =
-//                    graphGenerator.getPatientsParsed().size() < Integer.parseInt(ConfigReader.getInstance().getProperty("graph-size"));
-//            System.out.println("checkSize: " + checkSize);
-            checkSize = true;
+
+            if (Helper.getInstance().isDebugMode(config)) {
+                checkSize =
+                        graphGenerator.getPatientsParsed().size() < Integer.parseInt(ConfigReader.getInstance().getProperty("graph-size"));
+
+            } else {
+                checkSize = true;
+            }
+
+
         }
         this.getConfiguration().setPatterns(graphGenerator.getGraphStream());
     }

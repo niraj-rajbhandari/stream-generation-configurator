@@ -1,6 +1,7 @@
 package org.niraj.stream.parser.domain.medicare.pojo;
 
 public class Diagnosis {
+    public static final String CLAIM_DIAGNOSIS_CODE_INDEX = "claim-diagnosis-code";
     private String diagnosis;
     private String lowICDCode;
     private String highICDCode;

@@ -15,12 +15,8 @@ import org.niraj.stream.parser.pojo.Vertex;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClaimGraphGenerator extends GraphGenerator {
@@ -34,7 +30,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
     private boolean differentXP;
 
     private static ClaimGraphGenerator instance = null;
-    private String previousPatient;
+    private Map<String,Vertex> previousPatient;
     private Integer visitCount;
     private Integer currentGraphVertexIndex;
     private Integer currentGraphEdgeIndex;
@@ -56,7 +52,6 @@ public class ClaimGraphGenerator extends GraphGenerator {
 //    private ConfigReader configReader;
 
     private ClaimGraphGenerator() throws IOException, TimeoutException {
-        LOGGER.log(Level.FINE," Claim graph parser called");
 
         this.patientsParsed = new HashMap<>();
         this.resetCounters();
@@ -68,6 +63,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
         this.edgeList = new ArrayList<>();
         this.configReader = ConfigReader.getInstance();
         this.differentXP = new Boolean(this.configReader.getProperty(POSITIVE_GRAPH_PROPERTY));
+        this.previousPatient = new HashMap<>();
 
 
         //Settings to create connection and establish channel
@@ -124,21 +120,25 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
         Patient patient = new Patient();
         patient.setPatientId(claim.getPatientId());
+
+        Vertex patientVertex;
         if (claim.claimCodeExists() && patientRepo.findAll().contains(patient)) {
-            if (previousPatient != null && previousPatient.equals(claim.getPatientId())) {
+            if (!previousPatient.isEmpty() && previousPatient.containsKey(claim.getPatientId())) {
                 subGraphId = (this.differentXP) ? this.patientsParsed.get(claim.getPatientId()) : SINGLE_GRAPH;
                 this.visitCount++;
+                patientVertex=previousPatient.get(claim.getPatientId());
             } else {
                 this.resetDiagnosisProcedurePhysicianMetaData();
                 this.resetCounters();
-                this.previousPatient = claim.getPatientId();
 
                 this.patientsParsed.put(claim.getPatientId(),
                         Integer.toString(this.patientsParsed.size() + 1));
                 subGraphId = (this.differentXP) ? Integer.toString(this.patientsParsed.size()) : SINGLE_GRAPH;
+
+                patientVertex = createPatientVertex(subGraphId, claim.getPatientId());
+                this.previousPatient.put(claim.getPatientId(),patientVertex);
             }
 
-            Vertex patientVertex = createPatientVertex(subGraphId, claim.getPatientId());
             Vertex claimVertex = createClaimVertex(claim.getId(), subGraphId);
 
             createEdge(patientVertex, claimVertex, EdgeType.DIRECTED, "files", subGraphId);
@@ -196,7 +196,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
         }
     }
 
-    private void createPhysicianSubGraph(Claim claim, Vertex carrierVertex, Vertex patientVertex, String graphId) {
+    private void createPhysicianSubGraph(Claim claim, Vertex carrierVertex, Vertex patientVertex, String graphId) throws FileNotFoundException {
         for (Map.Entry<Integer, String> physicianEntry : claim.getPhysicianList().entrySet()) {
             String physician = physicianEntry.getValue();
             boolean physicianExists = this.physicianParsed.containsKey(physician);
@@ -262,7 +262,9 @@ public class ClaimGraphGenerator extends GraphGenerator {
     }
 
     private Vertex createPatientVertex(String graphId, String patientId) {
-        return createVertex(this.getAttribute(ClaimGraphConstants.PATIENT_VERTEX_LABEL, graphId));
+        Map<String, String> attributes = this.getAttribute(ClaimGraphConstants.PATIENT_VERTEX_LABEL, graphId);
+        attributes.put(COMMENT_ATTRIBUTE_INDEX, "//Patient Id " + patientId);
+        return createVertex(attributes);
     }
 
     private Vertex createClaimVertex(String claimId, String graphId) {
@@ -284,7 +286,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
         Map<String, String> priorDiagnosisCodeVertexAttributes =
                 this.getAttribute(ClaimGraphConstants.PRIOR_DIAGNOSIS_VERTEX_LABEL, graphId);
-        priorDiagnosisCodeVertexAttributes.put(CODE_INDEX, code);
+        priorDiagnosisCodeVertexAttributes.put(COMMENT_ATTRIBUTE_INDEX, "//" + CODE_INDEX + " " + code);
 
         Vertex priorDiagnosisVertex = createVertex(priorDiagnosisCodeVertexAttributes);
         this.priorDiagnosisParsed.put(code, priorDiagnosisVertex);
@@ -295,7 +297,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
     private Vertex createActualDiagnosisCodeVertex(String code, String graphId) {
         Map<String, String> actualDiagnosisCodeVertexAttributes =
                 this.getAttribute(ClaimGraphConstants.ACTUAL_DIAGNOSIS_VERTEX_LABEL, graphId);
-        actualDiagnosisCodeVertexAttributes.put(CODE_INDEX, code);
+        actualDiagnosisCodeVertexAttributes.put(COMMENT_ATTRIBUTE_INDEX, "//" + CODE_INDEX + " " + code);
 
         Vertex actualDiagnosisVertex = createVertex(actualDiagnosisCodeVertexAttributes);
         this.actualDiagnosisParsed.put(code, actualDiagnosisVertex);
