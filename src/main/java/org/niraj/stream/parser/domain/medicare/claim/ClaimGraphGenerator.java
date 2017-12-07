@@ -207,8 +207,10 @@ public class ClaimGraphGenerator extends GraphGenerator {
                 physicianVertex = this.physicianParsed.get(physician);
             }
 
-            createEdge(carrierVertex, physicianVertex, EdgeType.DIRECTED, "attending", graphId);
-            createEdge(patientVertex, physicianVertex, EdgeType.DIRECTED, "visit-" + visitCount + "-attended-by", graphId);
+            if(newPhysician){
+                createEdge(carrierVertex, physicianVertex, EdgeType.DIRECTED, "attending", graphId);
+                createEdge(patientVertex, physicianVertex, EdgeType.DIRECTED, "visit-" + visitCount + "-attended-by", graphId);
+            }
 
             Vertex actualDiagnosisVertex =
                     createActualDiagnosisSubGraph(claim, patientVertex, physicianVertex, graphId,
