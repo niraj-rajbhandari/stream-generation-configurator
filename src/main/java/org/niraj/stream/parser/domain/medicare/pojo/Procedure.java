@@ -12,6 +12,7 @@ public class Procedure {
         this.setProcedure(procedure);
         this.setLowHCPCSCode(lowHCPCSCode);
         this.setHighHCPCSCode(highHCPCSCode);
+        this.setType(type);
     }
 
     public String getProcedure() {
