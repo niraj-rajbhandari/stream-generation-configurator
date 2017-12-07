@@ -199,9 +199,9 @@ public class ClaimGraphGenerator extends GraphGenerator {
     private void createPhysicianSubGraph(Claim claim, Vertex carrierVertex, Vertex patientVertex, String graphId) throws FileNotFoundException {
         for (Map.Entry<Integer, String> physicianEntry : claim.getPhysicianList().entrySet()) {
             String physician = physicianEntry.getValue();
-            boolean physicianExists = this.physicianParsed.containsKey(physician);
+            boolean newPhysician = !this.physicianParsed.containsKey(physician);
             Vertex physicianVertex;
-            if (!physicianExists) {
+            if (newPhysician) {
                 physicianVertex = createPhysicianVertex(physician, graphId);
             } else {
                 physicianVertex = this.physicianParsed.get(physician);
@@ -211,28 +211,33 @@ public class ClaimGraphGenerator extends GraphGenerator {
             createEdge(patientVertex, physicianVertex, EdgeType.DIRECTED, "visit-" + visitCount + "-attended-by", graphId);
 
             Vertex actualDiagnosisVertex =
-                    createActualDiagnosisSubGraph(claim, patientVertex, physicianVertex, graphId, physicianEntry.getKey());
-            createProcedureSubGraph(claim, patientVertex, physicianVertex, actualDiagnosisVertex, graphId, physicianEntry.getKey());
+                    createActualDiagnosisSubGraph(claim, patientVertex, physicianVertex, graphId,
+                            physicianEntry.getKey(), newPhysician);
+            createProcedureSubGraph(claim, patientVertex, physicianVertex, actualDiagnosisVertex, graphId,
+                    physicianEntry.getKey(), newPhysician);
         }
     }
 
     private Vertex createActualDiagnosisSubGraph(Claim claim, Vertex patientVertex,
-                                                 Vertex physicianVertex, String graphId, Integer physicianIndex) {
+                                                 Vertex physicianVertex, String graphId,
+                                                 Integer physicianIndex, boolean newPhysician) {
         String actualDiagnosis = claim.getLineDiagnosisCodeList().get(physicianIndex);
-        boolean actualDiagnosisExists = this.actualDiagnosisParsed.containsKey(actualDiagnosis);
+        boolean newActualDiagnosis = !this.actualDiagnosisParsed.containsKey(actualDiagnosis);
 
         Vertex actualDiagnosisCodeVertex;
-        if (!actualDiagnosisExists) {
+        if (newActualDiagnosis) {
             actualDiagnosisCodeVertex = createActualDiagnosisCodeVertex(actualDiagnosis, graphId);
         } else {
             actualDiagnosisCodeVertex = this.actualDiagnosisParsed.get(actualDiagnosis);
         }
 
+        if(newPhysician || newActualDiagnosis){
+            createEdge(patientVertex, actualDiagnosisCodeVertex, EdgeType.DIRECTED, "diagnosed-with", graphId);
+            createEdge(physicianVertex, actualDiagnosisCodeVertex, EdgeType.DIRECTED, "make-diagnosis", graphId);
+        }
 
-        createEdge(patientVertex, actualDiagnosisCodeVertex, EdgeType.DIRECTED, "diagnosed-with", graphId);
-        createEdge(physicianVertex, actualDiagnosisCodeVertex, EdgeType.DIRECTED, "make-diagnosis", graphId);
 
-        if (!actualDiagnosisExists) {
+        if (newActualDiagnosis) {
             String diagnosis = this.diagnosisRepo.find(actualDiagnosis);
             Vertex actualDiagnosisNameVertex = createDiagnosisNameVertex(diagnosis, graphId);
             createEdge(actualDiagnosisCodeVertex, actualDiagnosisNameVertex, EdgeType.UNDIRECTED, "code", graphId);
@@ -242,14 +247,15 @@ public class ClaimGraphGenerator extends GraphGenerator {
     }
 
     private void createProcedureSubGraph(Claim claim, Vertex patientVertex, Vertex physicianVertex,
-                                         Vertex actualDiagnosisVertex, String graphId, Integer physicianIndex) {
+                                         Vertex actualDiagnosisVertex, String graphId
+            , Integer physicianIndex, boolean newPhysician) {
 
         String procedureRecommended = claim.getHCPCSCodeList().get(physicianIndex);
-        boolean procedureExists = this.procedureParsed.containsKey(procedureRecommended);
+        boolean newProcedure = !this.procedureParsed.containsKey(procedureRecommended);
 
         Vertex procedureVertex;
         String claimStatus = claim.getLineProcessingIndicationCodeList().get(physicianIndex);
-        if (!procedureExists) {
+        if (newProcedure) {
             procedureVertex = createProcedureVertex(procedureRecommended, graphId, claimStatus);
             this.procedureParsed.put(procedureRecommended, procedureVertex);
         } else {
@@ -257,8 +263,10 @@ public class ClaimGraphGenerator extends GraphGenerator {
         }
 
         createEdge(actualDiagnosisVertex, procedureVertex, EdgeType.DIRECTED, "treated-with", graphId);
-        createEdge(physicianVertex, procedureVertex, EdgeType.DIRECTED, "on-visit-" + visitCount + "-recommend", graphId);
-        createEdge(patientVertex, procedureVertex, EdgeType.DIRECTED, "on-visit-" + visitCount + "-received", graphId);
+        if(newPhysician || newProcedure){
+            createEdge(physicianVertex, procedureVertex, EdgeType.DIRECTED, "on-visit-" + visitCount + "-recommend", graphId);
+            createEdge(patientVertex, procedureVertex, EdgeType.DIRECTED, "on-visit-" + visitCount + "-received", graphId);
+        }
     }
 
     private Vertex createPatientVertex(String graphId, String patientId) {
