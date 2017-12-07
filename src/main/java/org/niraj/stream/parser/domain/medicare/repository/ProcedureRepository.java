@@ -161,23 +161,19 @@ public class ProcedureRepository {
     public String find(String procedureCode) {
         if (procedureCode == null) {
             return OTHER_PROCEDURE_CODE;
-        } else if (procedureCode.matches("[A-Za-z-0-9]+")) {
-            if (Character.isAlphabetic(procedureCode.charAt(0))) {
-                return Character.toString(procedureCode.charAt(0));
-            } else if (procedureCode.length() > 4 && Character.isAlphabetic(procedureCode.charAt(4))) {
-                return CPT_II_PROCEDURE_CODE;
+        } else if (procedureCode.matches("[A-Za-z][A-Za-z0-9]*")) {
+            return Character.toString(procedureCode.charAt(0));
+        } else if (procedureCode.length() > 4 && Character.isAlphabetic(procedureCode.charAt(4))) {
+            return CPT_II_PROCEDURE_CODE;
 //            } else if (Character.isAlphabetic(procedureCode.charAt(3))) {
 //                return OTHER_PROCEDURE_CODE;
-            } else {
-                return OTHER_PROCEDURE_CODE;
-            }
         } else {
             List<Procedure> filteredList = procedureList.stream()
                     .filter(p -> Integer.parseInt(procedureCode) >= Integer.parseInt(p.getLowHCPCSCode())
                             && Integer.parseInt(procedureCode) <= Integer.parseInt(p.getHighHCPCSCode()))
                     .collect(Collectors.toList());
 
-            return (filteredList.size() > 0) ? filteredList.get(0).getProcedure() : OTHER_PROCEDURE_CODE;
+            return (filteredList.size() > 0) ? filteredList.get(0).getType() : OTHER_PROCEDURE_CODE;
         }
     }
 }

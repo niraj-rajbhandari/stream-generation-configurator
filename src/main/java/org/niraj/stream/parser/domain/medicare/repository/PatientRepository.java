@@ -25,6 +25,17 @@ public class PatientRepository {
      */
     private Map<String, String> patientsFilterByState;
 
+    private PatientRepository(String patientFile)
+            throws FileNotFoundException, IllegalArgumentException {
+        helper = Helper.getInstance();
+        patientsFilterByState = new HashMap<>();
+        patientsFilterByState.put(Patient.STATE_CODE_INDEX,
+                ConfigReader.getInstance().getProperty(Patient.STATE_CODE_PROPERTY_INDEX));
+
+        this.patientFile = helper.getAbsolutePath(patientFile,true);
+        this.setPatientList();
+    }
+
     public static PatientRepository getInstance() throws FileNotFoundException, IllegalArgumentException {
         ConfigReader configReader = ConfigReader.getInstance();
         String patientFile = configReader.getProperty(PATIENT_DATA_PROPERTY);
@@ -47,17 +58,6 @@ public class PatientRepository {
 
     public boolean patientExists(String patiendId) {
         return (this.findById(patiendId) != null);
-    }
-
-    private PatientRepository(String patientFile)
-            throws FileNotFoundException, IllegalArgumentException {
-        helper = Helper.getInstance();
-        patientsFilterByState = new HashMap<>();
-        patientsFilterByState.put(Patient.STATE_CODE_INDEX,
-                ConfigReader.getInstance().getProperty(Patient.STATE_CODE_PROPERTY_INDEX));
-
-        this.patientFile = helper.getAbsolutePath(patientFile,true);
-        this.setPatientList();
     }
 
     private void setPatientList() throws FileNotFoundException, IllegalArgumentException {
