@@ -7,15 +7,10 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Claim {
-
-    public static final String CLAIM_CODE_INDEX = "claim-code";
 
     /**
      * Claim ID
@@ -769,7 +764,7 @@ public class Claim {
     }
 
     public Map<Integer, String> getPriorDiagnosisCodeList() throws FileNotFoundException {
-        String statusCode = ConfigReader.getInstance().getProperty(CLAIM_CODE_INDEX);
+        String statusCode = ConfigReader.getInstance().getProperty(Diagnosis.CLAIM_DIAGNOSIS_CODE_INDEX);
         return this.getAttributeValues("priorDiagnosisCode").entrySet().stream()
                 .filter(e -> e.getValue().startsWith(statusCode))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -788,7 +783,7 @@ public class Claim {
     }
 
     public boolean claimCodeExists() throws FileNotFoundException {
-        return (this.getPriorDiagnosisCodeList().size() > 0);
+        return !this.getPriorDiagnosisCodeList().isEmpty();
     }
 
     @Override
