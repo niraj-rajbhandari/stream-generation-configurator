@@ -16,7 +16,6 @@ public class Edge extends GraphProperty {
     @JsonProperty("streamNum")
     private int streamId;
 
-    private Map<String,String> attributes;
 
     public Edge(){
         setMinOffset(10);
@@ -80,13 +79,6 @@ public class Edge extends GraphProperty {
         this.streamId = streamId;
     }
 
-    public Map<String, String> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
-    }
 
 
 }

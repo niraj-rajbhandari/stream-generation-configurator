@@ -11,8 +11,6 @@ public class Vertex extends GraphProperty{
     @JsonProperty("new")
     private boolean isNew;
 
-    private Map<String, String> attributes;
-
     public String getId() {
         return id;
     }
@@ -31,13 +29,6 @@ public class Vertex extends GraphProperty{
 
     public Vertex(){
         setNew(true);
-    }
-    public Map<String, String> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
     }
 
     @Override
