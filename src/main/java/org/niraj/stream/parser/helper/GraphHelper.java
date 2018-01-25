@@ -1,16 +1,8 @@
-package edu.tntech.graph.helper;
+package org.niraj.stream.parser.helper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.tntech.graph.enumerator.FileType;
-import edu.tntech.graph.pojo.Edge;
-import edu.tntech.graph.pojo.GraphProperty;
-import edu.tntech.graph.pojo.Node;
-import edu.tntech.graph.pojo.Sample;
+import org.niraj.stream.parser.pojo.Edge;
+import org.niraj.stream.parser.pojo.GraphProperty;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class GraphHelper {
     public static final String GRAPH_ID_KEY = "graph_id";
@@ -56,31 +48,6 @@ public class GraphHelper {
 
     public static void setEdgeSourceAttribute(Edge edge, String sourceId) {
         edge.getAttributes().put(GRAPH_EDGE_SOURCE_KEY, sourceId);
-    }
-
-    public static Sample getStoredSample() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        File sampleFile = new File(Helper.getInstance().getAbsolutePath(Sample.SAMPLE_FILE, FileType.DATA));
-        Sample sample = mapper.readValue(sampleFile, Sample.class);
-        for (Map.Entry<String, Map<Integer, Edge>> entry : sample.getSampleEdges().entrySet()) {
-            Map<Integer, Edge> edges = entry.getValue().entrySet().stream()
-                    .map(e -> mapEdgeSourceTarget(e, sample, entry.getKey()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            sample.getSampleEdges().put(entry.getKey(), edges);
-        }
-        return sample;
-    }
-
-    private static Map.Entry<Integer, Edge> mapEdgeSourceTarget(Map.Entry<Integer, Edge> entry, Sample sample, String graphId) {
-        Edge edge = entry.getValue();
-        Node sourceVertex = sample.getSampledGraphNode(edge.getSource(), graphId);
-
-        Node targetVertex = sample.getSampledGraphNode(edge.getTarget(), graphId);
-
-        edge.setSourceVertex(sourceVertex);
-        edge.setTargetVertex(targetVertex);
-        entry.setValue(edge);
-        return entry;
     }
 
 }

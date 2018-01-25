@@ -1,5 +1,10 @@
 package org.niraj.stream.parser.domain.medicare.claim;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.niraj.stream.parser.GraphGenerator;
 import org.niraj.stream.parser.configuration.ConfigReader;
 import org.niraj.stream.parser.constants.ClaimGraphConstants;
@@ -10,6 +15,7 @@ import org.niraj.stream.parser.domain.medicare.repository.PatientRepository;
 import org.niraj.stream.parser.domain.medicare.repository.ProcedureRepository;
 import org.niraj.stream.parser.enumerator.EdgeType;
 import org.niraj.stream.parser.pojo.Edge;
+import org.niraj.stream.parser.pojo.GraphProperty;
 import org.niraj.stream.parser.pojo.StreamConfigurationPattern;
 import org.niraj.stream.parser.pojo.Vertex;
 
@@ -47,9 +53,8 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
     private StreamConfigurationPattern streamConfigurationPattern;
 
-//    private Connection connection;
-//    private Channel channel;
-//    private ConfigReader configReader;
+    private Connection connection;
+    private Channel channel;
 
     private ClaimGraphGenerator() throws IOException, TimeoutException {
 
@@ -67,9 +72,9 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
 
         //Settings to create connection and establish channel
-//        ConnectionFactory connectionFactory = new ConnectionFactory();
-//        connection = connectionFactory.newConnection();
-//        channel = _getChannel();
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        connection = connectionFactory.newConnection();
+        channel = _getChannel();
     }
 
     public static ClaimGraphGenerator getInstance() throws IOException, TimeoutException {
@@ -359,7 +364,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
         vertexList.add(vertex);
 
-//        _publishToQueue(vertex);
+        _publishToQueue(vertex);
         return vertex;
     }
 
@@ -379,7 +384,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
         edgeList.add(edge);
 
-//        _publishToQueue(edge); //To publish to the queue
+        _publishToQueue(edge); //To publish to the queue
 
         return edge;
     }
@@ -394,27 +399,27 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
 //  Related to starting the channel for producer
 //
-//
-//    private Channel _getChannel() throws IOException {
-//        Channel channel = connection.createChannel();
-//        channel.queueDeclare(configReader.getProperty("message-queue"), false, false, false, null);
-//        Integer channelLimit = Integer.parseInt(configReader.getProperty("processed-item-size"));
-//        channel.basicQos(channelLimit, true);
-//        return channel;
-//    }
-//
-//    private void _publishToQueue(GraphProperty prop){
-//        ObjectMapper mapper = new ObjectMapper();
-//        String message;
-//        try {
-//            message = mapper.writeValueAsString(prop);
-//        } catch (JsonProcessingException e) {
-//            message = prop.toString();
-//        }
-//        try {
-//            channel.basicPublish("", configReader.getProperty("message-queue"), null, message.getBytes());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+    private Channel _getChannel() throws IOException {
+        Channel channel = connection.createChannel();
+        channel.queueDeclare(configReader.getProperty("message-queue"), false, false, false, null);
+        Integer channelLimit = Integer.parseInt(configReader.getProperty("processed-item-size"));
+        channel.basicQos(channelLimit, true);
+        return channel;
+    }
+
+    private void _publishToQueue(GraphProperty prop){
+        ObjectMapper mapper = new ObjectMapper();
+        String message;
+        try {
+            message = mapper.writeValueAsString(prop);
+        } catch (JsonProcessingException e) {
+            message = prop.toString();
+        }
+        try {
+            channel.basicPublish("", configReader.getProperty("message-queue"), null, message.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
