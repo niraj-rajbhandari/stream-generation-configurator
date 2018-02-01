@@ -2,8 +2,6 @@ package org.niraj.stream.parser.pojo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Map;
-
 public class Vertex extends GraphProperty{
 
     private String id;

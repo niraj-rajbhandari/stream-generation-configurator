@@ -27,6 +27,15 @@ import java.util.logging.Logger;
 
 public class ClaimGraphGenerator extends GraphGenerator {
 
+    private static final String EXCHANGE_TYPE = "direct";
+    private static final String GRAPH_EXCHANGE_PROPERTY = "graph-exchange";
+    private static final String QUEUE_CONNECTION_HOST_PROPERTY = "connection-host";
+    private static final String QUEUE_USERNAME_PROPERTY = "rabbitmq-username";
+    private static final String QUEUE_PASSWORD_PROPERTY = "rabbitmq-password";
+    private static final String QUEUE_VIRTUAL_HOST_PROPERTY = "rabbitmq-vhost";
+    private static final String PROCESSED_ITEM_SIZE_PROPERTY = "processed-item-size";
+    private static final String SAMPLE_SIZE_PROPERTY = "sample-size";
+
     private static final Logger LOGGER = Logger.getLogger(ClaimGraphGenerator.class.getName());
 
     private ConfigReader configReader;
@@ -36,7 +45,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
     private boolean differentXP;
 
     private static ClaimGraphGenerator instance = null;
-    private Map<String,Vertex> previousPatient;
+    private Map<String, Vertex> previousPatient;
     private Integer visitCount;
     private Integer currentGraphVertexIndex;
     private Integer currentGraphEdgeIndex;
@@ -56,7 +65,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
     private Connection connection;
     private Channel channel;
 
-    private ClaimGraphGenerator() throws IOException, TimeoutException {
+    public ClaimGraphGenerator() throws IOException, TimeoutException {
 
         this.patientsParsed = new HashMap<>();
         this.resetCounters();
@@ -72,17 +81,21 @@ public class ClaimGraphGenerator extends GraphGenerator {
 
 
         //Settings to create connection and establish channel
-        ConnectionFactory connectionFactory = new ConnectionFactory();
-        connection = connectionFactory.newConnection();
+        _setConnection();
         channel = _getChannel();
     }
 
-    public static ClaimGraphGenerator getInstance() throws IOException, TimeoutException {
-        if (instance == null) {
-            instance = new ClaimGraphGenerator();
-        }
-        return instance;
+    public void closeQueueConnection() throws IOException, TimeoutException {
+        channel.close();
+        connection.close();
     }
+
+//    public static ClaimGraphGenerator getInstance() throws IOException, TimeoutException {
+//        if (instance == null) {
+//            instance = new ClaimGraphGenerator();
+//        }
+//        return instance;
+//    }
 
     public List<Vertex> getVertexList() {
         return vertexList;
@@ -131,7 +144,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
             if (!previousPatient.isEmpty() && previousPatient.containsKey(claim.getPatientId())) {
                 subGraphId = (this.differentXP) ? this.patientsParsed.get(claim.getPatientId()) : SINGLE_GRAPH;
                 this.visitCount++;
-                patientVertex=previousPatient.get(claim.getPatientId());
+                patientVertex = previousPatient.get(claim.getPatientId());
             } else {
                 this.resetDiagnosisProcedurePhysicianMetaData();
                 this.resetCounters();
@@ -141,7 +154,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
                 subGraphId = (this.differentXP) ? Integer.toString(this.patientsParsed.size()) : SINGLE_GRAPH;
 
                 patientVertex = createPatientVertex(subGraphId, claim.getPatientId());
-                this.previousPatient.put(claim.getPatientId(),patientVertex);
+                this.previousPatient.put(claim.getPatientId(), patientVertex);
             }
 
             Vertex claimVertex = createClaimVertex(claim.getId(), subGraphId);
@@ -212,7 +225,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
                 physicianVertex = this.physicianParsed.get(physician);
             }
 
-            if(newPhysician){
+            if (newPhysician) {
                 createEdge(carrierVertex, physicianVertex, EdgeType.DIRECTED, "attending", graphId);
                 createEdge(patientVertex, physicianVertex, EdgeType.DIRECTED, "visit-" + visitCount + "-attended-by", graphId);
             }
@@ -238,7 +251,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
             actualDiagnosisCodeVertex = this.actualDiagnosisParsed.get(actualDiagnosis);
         }
 
-        if(newPhysician || newActualDiagnosis){
+        if (newPhysician || newActualDiagnosis) {
             createEdge(patientVertex, actualDiagnosisCodeVertex, EdgeType.DIRECTED, "diagnosed-with", graphId);
             createEdge(physicianVertex, actualDiagnosisCodeVertex, EdgeType.DIRECTED, "make-diagnosis", graphId);
         }
@@ -270,7 +283,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
         }
 
         createEdge(actualDiagnosisVertex, procedureVertex, EdgeType.DIRECTED, "treated-with", graphId);
-        if(newPhysician || newProcedure){
+        if (newPhysician || newProcedure) {
             createEdge(physicianVertex, procedureVertex, EdgeType.DIRECTED, "on-visit-" + visitCount + "-recommend", graphId);
             createEdge(patientVertex, procedureVertex, EdgeType.DIRECTED, "on-visit-" + visitCount + "-received", graphId);
         }
@@ -401,14 +414,19 @@ public class ClaimGraphGenerator extends GraphGenerator {
 //
 
     private Channel _getChannel() throws IOException {
+        Float processedItemConfig = Float.parseFloat(configReader.getProperty(PROCESSED_ITEM_SIZE_PROPERTY));
+        int sampleSize = Integer.parseInt(configReader.getProperty(SAMPLE_SIZE_PROPERTY));
+        Double processWindowSize = Math.ceil(sampleSize * processedItemConfig);
+        int channelLimit = processWindowSize.intValue();
+        String exchange = configReader.getProperty(GRAPH_EXCHANGE_PROPERTY);
         Channel channel = connection.createChannel();
+        channel.exchangeDeclare(exchange, EXCHANGE_TYPE);
         channel.queueDeclare(configReader.getProperty("message-queue"), false, false, false, null);
-        Integer channelLimit = Integer.parseInt(configReader.getProperty("processed-item-size"));
         channel.basicQos(channelLimit, true);
         return channel;
     }
 
-    private void _publishToQueue(GraphProperty prop){
+    private void _publishToQueue(GraphProperty prop) {
         ObjectMapper mapper = new ObjectMapper();
         String message;
         try {
@@ -421,5 +439,19 @@ public class ClaimGraphGenerator extends GraphGenerator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void _setConnection() throws TimeoutException, IOException {
+        if (connection == null) {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setUsername(configReader.getProperty(QUEUE_USERNAME_PROPERTY));
+            factory.setPassword(configReader.getProperty(QUEUE_PASSWORD_PROPERTY));
+            factory.setHost(configReader.getProperty(QUEUE_CONNECTION_HOST_PROPERTY));
+            factory.setVirtualHost(configReader.getProperty(QUEUE_VIRTUAL_HOST_PROPERTY));
+            int oneHourHeartBeat = 600 * 61;
+            factory.setRequestedHeartbeat(oneHourHeartBeat);
+            connection = factory.newConnection();
+        }
+
     }
 }

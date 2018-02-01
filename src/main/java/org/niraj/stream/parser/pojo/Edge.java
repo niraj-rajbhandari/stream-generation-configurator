@@ -1,5 +1,6 @@
 package org.niraj.stream.parser.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
@@ -10,10 +11,14 @@ public class Edge extends GraphProperty {
     private String source;
     private String target;
     private boolean isDirected;
+
+    @JsonIgnore
     private int minOffset;
+    @JsonIgnore
     private int maxOffset;
 
-    @JsonProperty("streamNum")
+    @JsonIgnore
+//    @JsonProperty("streamNum")
     private int streamId;
 
 

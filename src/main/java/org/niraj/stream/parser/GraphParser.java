@@ -23,8 +23,8 @@ public class GraphParser {
                             configReader.getProperty(OUTPUT_FILE));
             claimDataStreamConfigurator.createDataStreamConfiguration();
 
-            System.out.println("total items: " + claimDataStreamConfigurator.getConfiguration().getPatterns().stream()
-                    .mapToInt(p -> (p.getVertices().size() + p.getEdges().size())).sum());
+//            System.out.println("total items: " + claimDataStreamConfigurator.getConfiguration().getPatterns().stream()
+//                    .mapToInt(p -> (p.getVertices().size() + p.getEdges().size())).sum());
             claimDataStreamConfigurator.createJson();
 
         } catch (IOException | IllegalArgumentException | IllegalAccessException | TimeoutException e) {

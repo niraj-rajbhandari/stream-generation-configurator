@@ -1,10 +1,13 @@
-group 'edu.tntech.graph'
+group 'org.niraj.stream'
 //version '1.0'
 
 apply plugin: 'java'
+apply plugin: 'application'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+mainClassName = 'org.niraj.stream.parser.GraphParser'
 
 repositories {
     mavenCentral()
@@ -38,10 +41,11 @@ task copyJar(type: Copy) {
 task buildApp (dependsOn: [clean, jar, copyJar])
 
 dependencies {
-    // https://mvnrepository.com/artifact/com.rabbitmq/amqp-client
-    compile group: 'com.rabbitmq', name: 'amqp-client', version: '5.0.0'
+
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+    // https://mvnrepository.com/artifact/com.rabbitmq/amqp-client
+    compile group: 'com.rabbitmq', name: 'amqp-client', version: '5.0.0'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.1'
     // https://mvnrepository.com/artifact/com.opencsv/opencsv

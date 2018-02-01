@@ -25,7 +25,7 @@ public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
     @Override
     public void createDataStreamConfiguration()
             throws IOException, IllegalArgumentException, IllegalAccessException, TimeoutException {
-        ClaimGraphGenerator graphGenerator = ClaimGraphGenerator.getInstance();
+        ClaimGraphGenerator graphGenerator = new ClaimGraphGenerator();
         Iterator<Claim> csvIterator = this.getCsvParser().iterator();
         boolean checkSize = true;
         while (csvIterator.hasNext() && checkSize) {
@@ -40,5 +40,8 @@ public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
             }
         }
         this.getConfiguration().setPatterns(graphGenerator.getGraphStream());
+
+
+        graphGenerator.closeQueueConnection();
     }
 }
