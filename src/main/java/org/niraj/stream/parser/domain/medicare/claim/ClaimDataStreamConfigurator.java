@@ -12,6 +12,8 @@ import java.util.concurrent.TimeoutException;
 
 public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
 
+    private static final String PUBLISHING_COMPLETED = "done";
+
     private ConfigReader config;
     public ClaimDataStreamConfigurator(String inputFile, String outputFile)
             throws FileNotFoundException {
@@ -41,7 +43,7 @@ public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
         }
         this.getConfiguration().setPatterns(graphGenerator.getGraphStream());
 
-
+        graphGenerator.publishToQueue(PUBLISHING_COMPLETED);
         graphGenerator.closeQueueConnection();
     }
 }

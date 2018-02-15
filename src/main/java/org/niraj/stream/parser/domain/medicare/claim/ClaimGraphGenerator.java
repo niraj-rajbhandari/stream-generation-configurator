@@ -157,6 +157,7 @@ public class ClaimGraphGenerator extends GraphGenerator {
                 this.previousPatient.put(claim.getPatientId(), patientVertex);
             }
 
+            System.out.println("Graph Id:" + subGraphId);
             Vertex claimVertex = createClaimVertex(claim.getId(), subGraphId);
 
             createEdge(patientVertex, claimVertex, EdgeType.DIRECTED, "files", subGraphId);
@@ -434,8 +435,13 @@ public class ClaimGraphGenerator extends GraphGenerator {
         } catch (JsonProcessingException e) {
             message = prop.toString();
         }
+        publishToQueue(message);
+    }
+
+    public void publishToQueue(String message) {
+        String exchange = configReader.getProperty(GRAPH_EXCHANGE_PROPERTY);
         try {
-            channel.basicPublish("", configReader.getProperty("message-queue"), null, message.getBytes());
+            channel.basicPublish(exchange, configReader.getProperty("message-queue"), null, message.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -452,6 +458,5 @@ public class ClaimGraphGenerator extends GraphGenerator {
             factory.setRequestedHeartbeat(oneHourHeartBeat);
             connection = factory.newConnection();
         }
-
     }
 }

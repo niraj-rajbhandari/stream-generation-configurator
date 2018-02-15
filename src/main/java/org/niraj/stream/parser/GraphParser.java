@@ -16,6 +16,10 @@ public class GraphParser {
     private static final String OUTPUT_FILE = "output-file";
 
     public static void main(String... args) {
+            GraphParser.claimGraphGenerator(args);
+    }
+
+    private static void claimGraphGenerator(String... args){
         try {
             ConfigReader configReader = ConfigReader.getInstance();
             DataStreamConfigurator<Claim> claimDataStreamConfigurator =
@@ -30,6 +34,10 @@ public class GraphParser {
         } catch (IOException | IllegalArgumentException | IllegalAccessException | TimeoutException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void enronGraphGenerator(String ...args){
+
     }
 
     private static Map<String, String> parseArgs(String... args) {
