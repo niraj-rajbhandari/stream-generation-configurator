@@ -7,6 +7,7 @@ import org.niraj.stream.parser.helper.Helper;
 import org.niraj.stream.parser.io.CsvParser;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class PatientRepository {
     private Map<String, String> patientsFilterByState;
 
     private PatientRepository(String patientFile)
-            throws FileNotFoundException, IllegalArgumentException {
+            throws IOException, IllegalArgumentException {
         helper = Helper.getInstance();
         patientsFilterByState = new HashMap<>();
         patientsFilterByState.put(Patient.STATE_CODE_INDEX,
@@ -36,7 +37,7 @@ public class PatientRepository {
         this.setPatientList();
     }
 
-    public static PatientRepository getInstance() throws FileNotFoundException, IllegalArgumentException {
+    public static PatientRepository getInstance() throws IOException, IllegalArgumentException {
         ConfigReader configReader = ConfigReader.getInstance();
         String patientFile = configReader.getProperty(PATIENT_DATA_PROPERTY);
         if (instance == null) {

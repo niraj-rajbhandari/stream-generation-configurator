@@ -1,26 +1,20 @@
 package org.niraj.stream.parser.domain.medicare.claim;
 
+import org.niraj.stream.parser.configuration.ConfigReader;
 import org.niraj.stream.parser.configuration.DataStreamConfigurator;
 import org.niraj.stream.parser.domain.medicare.pojo.Claim;
 import org.niraj.stream.parser.helper.Helper;
-import org.niraj.stream.parser.configuration.ConfigReader;
+import org.niraj.stream.parser.message.queue.QueueService;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.TimeoutException;
 
 public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
 
-    private static final String PUBLISHING_COMPLETED = "done";
-
-    private ConfigReader config;
     public ClaimDataStreamConfigurator(String inputFile, String outputFile)
-            throws FileNotFoundException {
-        config = ConfigReader.getInstance();
-        this.setInputFile(Helper.getInstance().getAbsolutePath(inputFile, true));
-        this.setOutputFile(outputFile);
-
+            throws IOException {
+        super(inputFile,outputFile);
         this.setCsvParser(Claim.class);
     }
 
@@ -43,7 +37,8 @@ public class ClaimDataStreamConfigurator extends DataStreamConfigurator<Claim> {
         }
         this.getConfiguration().setPatterns(graphGenerator.getGraphStream());
 
-        graphGenerator.publishToQueue(PUBLISHING_COMPLETED);
-        graphGenerator.closeQueueConnection();
+        QueueService queueService = QueueService.getInstance();
+        queueService.publishToQueue(PUBLISHING_COMPLETED);
+        QueueService.closeQueue();
     }
 }

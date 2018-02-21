@@ -2,6 +2,8 @@ package org.niraj.stream.parser;
 
 import org.niraj.stream.parser.configuration.ConfigReader;
 import org.niraj.stream.parser.configuration.DataStreamConfigurator;
+import org.niraj.stream.parser.domain.email.EnronEmailStreamConfigurator;
+import org.niraj.stream.parser.domain.email.pojo.Email;
 import org.niraj.stream.parser.domain.medicare.claim.ClaimDataStreamConfigurator;
 import org.niraj.stream.parser.domain.medicare.pojo.Claim;
 
@@ -14,12 +16,28 @@ public class GraphParser {
 
     private static final String INPUT_DATA_KEY = "input-data";
     private static final String OUTPUT_FILE = "output-file";
+    private static final String DATA_TYPE_KEY = "data-type";
+    private static final String DATA_TYPE_EMAIL = "email";
+    private static final String DATA_TYPE_MEDICARE = "medicare";
+    private static final String DATA_TYPE_APPLICATION = "application";
 
     public static void main(String... args) {
-            GraphParser.claimGraphGenerator(args);
+        try {
+            String dataType = ConfigReader.getInstance().getProperty(DATA_TYPE_KEY);
+            if (dataType.equals(DATA_TYPE_EMAIL)) {
+                GraphParser.enronGraphGenerator(args);
+            } else if (dataType.equals(DATA_TYPE_MEDICARE)) {
+                GraphParser.claimGraphGenerator();
+            } else if (dataType.equals(DATA_TYPE_APPLICATION)) {
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    private static void claimGraphGenerator(String... args){
+    private static void claimGraphGenerator(String... args) {
         try {
             ConfigReader configReader = ConfigReader.getInstance();
             DataStreamConfigurator<Claim> claimDataStreamConfigurator =
@@ -36,8 +54,15 @@ public class GraphParser {
         }
     }
 
-    private static void enronGraphGenerator(String ...args){
-
+    private static void enronGraphGenerator(String... args) {
+        try {
+            ConfigReader configReader = ConfigReader.getInstance();
+            DataStreamConfigurator<Email> configurator = new EnronEmailStreamConfigurator(
+                    configReader.getProperty(OUTPUT_FILE));
+            configurator.createDataStreamConfiguration();
+        } catch (IOException | TimeoutException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     private static Map<String, String> parseArgs(String... args) {

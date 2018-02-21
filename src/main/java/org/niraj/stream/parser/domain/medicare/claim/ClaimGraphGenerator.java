@@ -1,12 +1,6 @@
 package org.niraj.stream.parser.domain.medicare.claim;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import org.niraj.stream.parser.GraphGenerator;
-import org.niraj.stream.parser.configuration.ConfigReader;
 import org.niraj.stream.parser.constants.ClaimGraphConstants;
 import org.niraj.stream.parser.domain.medicare.pojo.Claim;
 import org.niraj.stream.parser.domain.medicare.pojo.Patient;
@@ -14,124 +8,56 @@ import org.niraj.stream.parser.domain.medicare.repository.DiagnosisRepository;
 import org.niraj.stream.parser.domain.medicare.repository.PatientRepository;
 import org.niraj.stream.parser.domain.medicare.repository.ProcedureRepository;
 import org.niraj.stream.parser.enumerator.EdgeType;
-import org.niraj.stream.parser.pojo.Edge;
-import org.niraj.stream.parser.pojo.GraphProperty;
-import org.niraj.stream.parser.pojo.StreamConfigurationPattern;
 import org.niraj.stream.parser.pojo.Vertex;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-public class ClaimGraphGenerator extends GraphGenerator {
-
-    private static final String EXCHANGE_TYPE = "direct";
-    private static final String GRAPH_EXCHANGE_PROPERTY = "graph-exchange";
-    private static final String QUEUE_CONNECTION_HOST_PROPERTY = "connection-host";
-    private static final String QUEUE_USERNAME_PROPERTY = "rabbitmq-username";
-    private static final String QUEUE_PASSWORD_PROPERTY = "rabbitmq-password";
-    private static final String QUEUE_VIRTUAL_HOST_PROPERTY = "rabbitmq-vhost";
-    private static final String PROCESSED_ITEM_SIZE_PROPERTY = "processed-item-size";
-    private static final String SAMPLE_SIZE_PROPERTY = "sample-size";
+public class ClaimGraphGenerator extends GraphGenerator<Claim> {
 
     private static final Logger LOGGER = Logger.getLogger(ClaimGraphGenerator.class.getName());
-
-    private ConfigReader configReader;
 
     private Map<String, String> patientsParsed;
 
     private boolean differentXP;
 
-    private static ClaimGraphGenerator instance = null;
     private Map<String, Vertex> previousPatient;
     private Integer visitCount;
-    private Integer currentGraphVertexIndex;
-    private Integer currentGraphEdgeIndex;
+
     private PatientRepository patientRepo;
     private ProcedureRepository procedureRepo;
     private DiagnosisRepository diagnosisRepo;
-    private List<Vertex> vertexList;
-    private List<Edge> edgeList;
+
 
     private Map<String, Vertex> priorDiagnosisParsed;
     private Map<String, Vertex> actualDiagnosisParsed;
     private Map<String, Vertex> physicianParsed;
     private Map<String, Vertex> procedureParsed;
 
-    private StreamConfigurationPattern streamConfigurationPattern;
-
-    private Connection connection;
-    private Channel channel;
 
     public ClaimGraphGenerator() throws IOException, TimeoutException {
 
+        super();
         this.patientsParsed = new HashMap<>();
-        this.resetCounters();
-        this.streamConfigurationPattern = new StreamConfigurationPattern();
+
+
         this.patientRepo = PatientRepository.getInstance();
         this.diagnosisRepo = DiagnosisRepository.getInstance();
         this.procedureRepo = ProcedureRepository.getInstance();
-        this.vertexList = new ArrayList<>();
-        this.edgeList = new ArrayList<>();
-        this.configReader = ConfigReader.getInstance();
+
         this.differentXP = new Boolean(this.configReader.getProperty(POSITIVE_GRAPH_PROPERTY));
         this.previousPatient = new HashMap<>();
 
-
-        //Settings to create connection and establish channel
-        _setConnection();
-        channel = _getChannel();
-    }
-
-    public void closeQueueConnection() throws IOException, TimeoutException {
-        channel.close();
-        connection.close();
-    }
-
-//    public static ClaimGraphGenerator getInstance() throws IOException, TimeoutException {
-//        if (instance == null) {
-//            instance = new ClaimGraphGenerator();
-//        }
-//        return instance;
-//    }
-
-    public List<Vertex> getVertexList() {
-        return vertexList;
-    }
-
-    public void setVertexList(List<Vertex> vertexList) {
-        this.vertexList = vertexList;
-    }
-
-    public List<Edge> getEdgeList() {
-        return edgeList;
-    }
-
-    public void setEdgeList(List<Edge> edgeList) {
-        this.edgeList = edgeList;
     }
 
     public Map<String, String> getPatientsParsed() {
         return this.patientsParsed;
     }
 
-    public List<StreamConfigurationPattern> getGraphStream() throws IllegalAccessException {
-        if (this.edgeList.isEmpty() || this.vertexList.isEmpty()) {
-            throw new IllegalAccessException("Graph is not created to access this method, call createGraphStream() first");
-        }
-        List<StreamConfigurationPattern> graphStreamPatterns = new ArrayList<>();
-
-        this.streamConfigurationPattern.setId(graphStreamPatterns.size() + 1);
-        this.streamConfigurationPattern.setTrack(true);
-        this.streamConfigurationPattern.setEdges(this.edgeList);
-        this.streamConfigurationPattern.setVertices(this.vertexList);
-        this.streamConfigurationPattern.setProbability(1);
-
-        graphStreamPatterns.add(this.streamConfigurationPattern);
-        return graphStreamPatterns;
-    }
 
     public void createGraphStream(Claim claim) throws FileNotFoundException {
         String subGraphId;
@@ -168,15 +94,6 @@ public class ClaimGraphGenerator extends GraphGenerator {
             createDiagnosisPhysicianGraph(claim, carrierVertex, patientVertex, subGraphId);
         }
     }
-
-    private void resetCounters() {
-        this.visitCount = INITIAL_COUNT;
-        if (this.currentGraphVertexIndex == null) {
-            this.currentGraphVertexIndex = INITIAL_COUNT;
-            this.currentGraphEdgeIndex = INITIAL_COUNT;
-        }
-    }
-
 
     private void resetDiagnosisProcedurePhysicianMetaData() {
         this.priorDiagnosisParsed = new HashMap<>();
@@ -367,96 +284,5 @@ public class ClaimGraphGenerator extends GraphGenerator {
         createEdge(procedureVertex, claimStatusVertex, EdgeType.UNDIRECTED, "claim-status", graphId);
 
         return procedureVertex;
-    }
-
-    private Vertex createVertex(Map<String, String> attributes) {
-        Vertex vertex = new Vertex();
-        vertex.setId(Integer.toString(this.currentGraphVertexIndex++));
-        attributes.put(ID_INDEX, vertex.getId());
-        vertex.setAttributes(attributes);
-
-
-        vertexList.add(vertex);
-
-        _publishToQueue(vertex);
-        return vertex;
-    }
-
-    private Edge createEdge(Vertex source, Vertex destination, EdgeType edgeType, String label, String graphId) {
-        Edge edge = new Edge();
-        edge.setId(Integer.toString(this.currentGraphEdgeIndex++));
-        edge.setSource(source.getId());
-        edge.setTarget(destination.getId());
-        edge.setDirected(EdgeType.DIRECTED == edgeType);
-
-        Map<String, String> attributes = this.getAttribute(label, graphId);
-        attributes.put(GRAPH_EDGE_SOURCE_INDEX, edge.getSource());
-        attributes.put(GRAPH_EDGE_TARGET_INDEX, edge.getTarget());
-        attributes.put(ID_INDEX, edge.getId());
-
-        edge.setAttributes(attributes);
-
-        edgeList.add(edge);
-
-        _publishToQueue(edge); //To publish to the queue
-
-        return edge;
-    }
-
-    private Map<String, String> getAttribute(String label, String graphId) {
-        Map<String, String> vertexAttributes = new HashMap<>();
-        vertexAttributes.put(GRAPH_ID_ATTRIBUTE_INDEX, graphId);
-        vertexAttributes.put(LABEL_ATTRIBUTE_INDEX, label);
-
-        return vertexAttributes;
-    }
-
-//  Related to starting the channel for producer
-//
-
-    private Channel _getChannel() throws IOException {
-        Float processedItemConfig = Float.parseFloat(configReader.getProperty(PROCESSED_ITEM_SIZE_PROPERTY));
-        int sampleSize = Integer.parseInt(configReader.getProperty(SAMPLE_SIZE_PROPERTY));
-        Double processWindowSize = Math.ceil(sampleSize * processedItemConfig);
-        int channelLimit = processWindowSize.intValue();
-        String exchange = configReader.getProperty(GRAPH_EXCHANGE_PROPERTY);
-        Channel channel = connection.createChannel();
-        channel.exchangeDeclare(exchange, EXCHANGE_TYPE);
-        channel.queueDeclare(configReader.getProperty("message-queue"), false, false, false, null);
-        channel.basicQos(channelLimit, true);
-        return channel;
-    }
-
-    private void _publishToQueue(GraphProperty prop) {
-        ObjectMapper mapper = new ObjectMapper();
-        String message;
-        try {
-            message = mapper.writeValueAsString(prop);
-        } catch (JsonProcessingException e) {
-            message = prop.toString();
-        }
-        publishToQueue(message);
-    }
-
-    public void publishToQueue(String message) {
-        String exchange = configReader.getProperty(GRAPH_EXCHANGE_PROPERTY);
-        try {
-            channel.basicPublish(exchange, configReader.getProperty("message-queue"), null, message.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void _setConnection() throws TimeoutException, IOException {
-        if (connection == null) {
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.setUsername(configReader.getProperty(QUEUE_USERNAME_PROPERTY));
-            factory.setPassword(configReader.getProperty(QUEUE_PASSWORD_PROPERTY));
-            factory.setHost(configReader.getProperty(QUEUE_CONNECTION_HOST_PROPERTY));
-            factory.setVirtualHost(configReader.getProperty(QUEUE_VIRTUAL_HOST_PROPERTY));
-            int oneHourHeartBeat = 600 * 61;
-            factory.setRequestedHeartbeat(oneHourHeartBeat);
-            connection = factory.newConnection();
-        }
     }
 }

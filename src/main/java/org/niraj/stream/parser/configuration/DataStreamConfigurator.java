@@ -12,11 +12,28 @@ import java.util.concurrent.TimeoutException;
 
 public abstract class DataStreamConfigurator<T> {
 
-    private String inputFile;
-    private String outputFile;
-    private CsvParser<T> csvParser;
-    private StreamConfiguration configuration = new StreamConfiguration();
+    protected static final String PUBLISHING_COMPLETED = "done";
 
+    protected String inputFile;
+    protected String outputFile;
+    protected CsvParser<T> csvParser;
+    protected StreamConfiguration configuration = new StreamConfiguration();
+
+    protected ConfigReader config;
+    protected Helper helper;
+
+
+    protected DataStreamConfigurator(String inputFile, String outputFile) throws IOException {
+        config = ConfigReader.getInstance();
+        helper = Helper.getInstance();
+        helper.setDataDirectory(config.getProperty(Helper.DATA_TYPE_KEY));
+        if (inputFile != null)
+            this.setInputFile(helper.getAbsolutePath(inputFile, true));
+        else
+            this.setInputFile(null);
+
+        this.setOutputFile(outputFile);
+    }
 
     public String getInputFile() {
         return inputFile;
@@ -40,7 +57,8 @@ public abstract class DataStreamConfigurator<T> {
 
     public void setCsvParser(Class<T> pojoClass)
             throws FileNotFoundException {
-        this.csvParser = new CsvParser<>(this.inputFile, pojoClass, null, null);
+        if (this.csvParser != null)
+            this.csvParser = new CsvParser<>(this.inputFile, pojoClass, null, null);
     }
 
     public StreamConfiguration getConfiguration() {
@@ -57,7 +75,7 @@ public abstract class DataStreamConfigurator<T> {
     public void createJson() throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();
 //        jsonMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        File output = new File(Helper.getInstance().getAbsolutePath(outputFile,true));
+        File output = new File(helper.getAbsolutePath(outputFile, true));
         jsonMapper.writeValue(output, this.configuration);
     }
 }
