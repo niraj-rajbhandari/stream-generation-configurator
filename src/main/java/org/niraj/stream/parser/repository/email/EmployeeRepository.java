@@ -45,6 +45,7 @@ public class EmployeeRepository {
             employee.setEmail2(result.getString(5));
             employee.setEmail3(result.getString(6));
             employee.setEmail4(result.getString(7));
+            employee.setStatus(result.getString(9));
         }
 
         return employee;
@@ -73,6 +74,7 @@ public class EmployeeRepository {
             employee.setEmail2(result.getString(6));
             employee.setEmail3(result.getString(7));
             employee.setEmail4(result.getString(8));
+            employee.setStatus(result.getString(10));
 
             employees.add(employee);
         }

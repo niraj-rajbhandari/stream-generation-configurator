@@ -1,6 +1,7 @@
 package org.niraj.stream.parser.repository;
 
 import org.niraj.stream.parser.configuration.ConfigReader;
+import org.niraj.stream.parser.helper.Helper;
 
 import java.io.FileNotFoundException;
 import java.sql.Connection;
@@ -26,11 +27,17 @@ public class EmailDBConnection {
             String hostname = configReader.getProperty(EmailDBConnection.DB_HOST_KEY);
             int port = Integer.parseInt(configReader.getProperty(EmailDBConnection.DB_PORT_KEY));
             String database = configReader.getProperty(EmailDBConnection.DB_NAME_KEY);
-            Class.forName("com.mysql.jdbc.Driver");
-//            String connectionString = "jdbc:mysql://" + hostname + ":" + port + "/" + database;
-            String connectionString = "jdbc:mysql://db.csc.tntech.edu:3306/enron";
 
-            connection = DriverManager.getConnection(connectionString,"enron","dEvrPgPKk7g6BNVBEYSbBdRQNgebuFFD7MQmhkhnfyNyyCaA2PgacfC5R85m4bN8");
+            Class.forName("com.mysql.jdbc.Driver");
+            String connectionString = "jdbc:mysql://" + hostname + ":" + port + "/" + database;
+
+            if(!Helper.getInstance().isDebugMode(configReader)){
+                connectionString = "jdbc:mysql://db.csc.tntech.edu:3306/enron";
+                username = "enron";
+                password="dEvrPgPKk7g6BNVBEYSbBdRQNgebuFFD7MQmhkhnfyNyyCaA2PgacfC5R85m4bN8";
+            }
+
+            connection = DriverManager.getConnection(connectionString,username,password);
         } catch (ClassNotFoundException e) {
             throw new SQLException("MySQL driver not found");
         }

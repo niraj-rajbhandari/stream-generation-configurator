@@ -64,27 +64,28 @@ public class EmailGraphGenerator extends GraphGenerator<Email> {
 
         Map<String, String> dayVertexAttributes = getAttribute(Helper.getInstance().getDayBucket(message.getDatetime()), graphId);
         Vertex dayVertex = createVertex(dayVertexAttributes);
+        Map<Integer, Vertex> messageRecipientVertexLink = new HashMap<>();
         for (RecipientEmployee recipient : recipients) {
-            Map<String, String> messageAttributes = getAttribute(recipient.getReceptionMethod(), graphId);
-            messageAttributes.put(COMMENT_ATTRIBUTE_INDEX, "//Recipient Message ID: " + message.getMessageId() + "-- id: " + message.getMid());
-            Vertex messageVertex = createVertex(messageAttributes);
+            String comment = "//Recipient Message ID: " + message.getMessageId() + "-- id: " + message.getMid();
+            Vertex messageVertex = _createMessageVertex(graphId,recipient.getReceptionMethod(),comment);
 
             Edge senderMessageEdge = createEdge(senderVertex, messageVertex, EdgeType.DIRECTED, "sends", graphId);
 
             String recipientStatus = recipient.getStatus() == null ? "Not Employee" : recipient.getStatus();
-            Map<String, String> recipientVertexAttributes = getAttribute(recipientStatus.toUpperCase(), graphId);
-            Vertex recipientVertex = createVertex(recipientVertexAttributes);
+            Map<String, String> recipientStatusVertexAttributes = getAttribute(recipientStatus.toUpperCase(), graphId);
+            Vertex recipientStatusVertex = createVertex(recipientStatusVertexAttributes);
 
-            Map<Integer, Vertex> messageRecipientVertexLink = new HashMap<>();
+            Vertex recipientVertex = _createSenderRecipientVertex(recipientStatusVertex,"RECEIVER",graphId);
+
             messageRecipientVertexLink.put(recipient.getId(), recipientVertex);
             recipientVertexLink.put(message.getMid(), messageRecipientVertexLink);
 
-            Edge receiverMessageEdge = createEdge(messageVertex, recipientVertex, EdgeType.DIRECTED, "RECEIVES", graphId);
+            Edge receiverMessageEdge = createEdge(messageVertex, recipientVertex, EdgeType.DIRECTED, "receives", graphId);
 
-            Edge messageTimeEdge = createEdge(messageVertex, timeVertex, EdgeType.UNDIRECTED, "DURING", graphId);
+            Edge messageTimeEdge = createEdge(messageVertex, timeVertex, EdgeType.UNDIRECTED, "during", graphId);
 
-            Edge messageDayEdge = createEdge(messageVertex, dayVertex, EdgeType.UNDIRECTED, "ON", graphId);
-            Edge messageStateEdge = createEdge(messageVertex, messageStateVertex, EdgeType.UNDIRECTED, "IS", graphId);
+            Edge messageDayEdge = createEdge(messageVertex, dayVertex, EdgeType.UNDIRECTED, "on", graphId);
+            Edge messageStateEdge = createEdge(messageVertex, messageStateVertex, EdgeType.UNDIRECTED, "is", graphId);
         }
     }
 
@@ -94,7 +95,7 @@ public class EmailGraphGenerator extends GraphGenerator<Email> {
                 Map<Integer, Vertex> recipientVertexLinker = recipientVertexLink.get(forwardedMessageLink.getOriginal_mid());
 
                 Employee forwardingEmployee = employeeRepository.getEmployeeByEmail(forwardedMessageLink.getForwarded_by());
-                if (recipientVertexLinker.keySet().contains(forwardingEmployee.getId())) {
+                if (forwardingEmployee != null && recipientVertexLinker.keySet().contains(forwardingEmployee.getId())) {
                     Vertex forwardingEmployeeVertex = recipientVertexLinker.get(forwardingEmployee.getId());
                     Message forwardedMessage = emailRepository.findMessageById(forwardedMessageLink.getMid());
                     List<RecipientEmployee> forwardedMessageRecipient =
@@ -111,16 +112,40 @@ public class EmailGraphGenerator extends GraphGenerator<Email> {
 
     private Vertex _createMessageStateVertex(EmailStateTypeEnum stateType, String graphId) {
         Map<String, String> messageStateVertexAttribute = getAttribute(stateType.getValue(), graphId);
-        return createVertex(messageStateVertexAttribute);
+        Vertex messageStateVertex = createVertex(messageStateVertexAttribute);
+
+        return messageStateVertex;
+    }
+
+    private Vertex _createMessageVertex(String graphId, String receptionMethod, String comment){
+        Map<String,String> messageVertexAttribute = getAttribute("MESSAGE",graphId);
+        messageVertexAttribute.put(COMMENT_ATTRIBUTE_INDEX, comment);
+        Vertex messageVertex = createVertex(messageVertexAttribute);
+
+        Map<String,String> messageReceptionMethodAttribute = getAttribute(receptionMethod,graphId);
+        Vertex messageReceptionMethodVertex = createVertex(messageReceptionMethodAttribute);
+
+        Edge messageStateEdge = createEdge(messageVertex,messageReceptionMethodVertex,EdgeType.UNDIRECTED,"using", graphId);
+
+        return messageVertex;
+    }
+
+    private Vertex _createSenderRecipientVertex(Vertex senderStatusVertex, String label, String graphId) {
+        Map<String, String> senderVertexAttributes = getAttribute(label, graphId);
+        Vertex senderVertex = createVertex(senderVertexAttributes);
+        Edge senderVertexStatusEdge = createEdge(senderVertex, senderStatusVertex, EdgeType.UNDIRECTED, "is", graphId);
+
+        return senderVertex;
     }
 
     private Vertex _createOriginalSenderVertex(Employee employee, String graphId) {
         String employeeStatus = (employee.getStatus() == null) ? "Not Employee" : employee.getStatus();
-        Map<String, String> originalSenderAttributes = getAttribute(employeeStatus.toUpperCase(), graphId);
-        originalSenderAttributes.put(COMMENT_ATTRIBUTE_INDEX, "//Original Employee ID: " + employee.getId() + "-- email: " +
+        Map<String, String> originalSenderStatusAttributes = getAttribute(employeeStatus.toUpperCase(), graphId);
+        originalSenderStatusAttributes.put(COMMENT_ATTRIBUTE_INDEX, "//Original Employee ID: " + employee.getId() + "-- email: " +
                 employee.getEmailId());
-        Vertex originalSenderVertex = createVertex(originalSenderAttributes);
-        return originalSenderVertex;
+        Vertex originalSenderStatusVertex = createVertex(originalSenderStatusAttributes);
+
+        return _createSenderRecipientVertex(originalSenderStatusVertex, "SENDER", graphId);
     }
 
 }

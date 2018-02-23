@@ -1,6 +1,5 @@
 package org.niraj.stream.parser.domain.email;
 
-import org.niraj.stream.parser.GraphGenerator;
 import org.niraj.stream.parser.configuration.DataStreamConfigurator;
 import org.niraj.stream.parser.domain.email.pojo.Email;
 import org.niraj.stream.parser.domain.email.pojo.Employee;
@@ -35,23 +34,24 @@ public class EnronEmailStreamConfigurator extends DataStreamConfigurator<Email> 
             List<Message> messages = emailRepo.getAllOriginalMessages();
             for (Message message : messages) {
                 Employee sender = employeeRepository.getEmployeeByEmail(message.getSender());
-                if (sender == null) {
-                    sender = new Employee();
-                    sender.setEmailId(message.getSender());
-                }
-//                if(sender != null){
-                Email email = new Email();
-                email.setOriginalMessage(message);
-                email.setOriginalSender(sender);
-                email.setEmailRecipient(employeeRepository.getRecipientEmployeeByMessageId(message.getMid()));
-                if(!email.getEmailRecipient().isEmpty()){
-                    email.setForwardedMessages(emailRepo.findForwardedMessageById(message.getMid()));
-                    graphGenerator.createGraphStream(email);
-                    if (helper.isDebugMode(config) && graphGenerator.getProcessedEmailCount() > Integer.parseInt(config.getProperty("graph-size")))
-                        break;
-
-                }
+//                if (sender == null) {
+//                    sender = new Employee();
+//                    sender.setEmailId(message.getSender());
 //                }
+                if (sender != null) {
+                    Email email = new Email();
+                    email.setOriginalMessage(message);
+                    email.setOriginalSender(sender);
+                    email.setEmailRecipient(employeeRepository.getRecipientEmployeeByMessageId(message.getMid()));
+                    if (!email.getEmailRecipient().isEmpty()) {
+                        email.setForwardedMessages(emailRepo.findForwardedMessageById(message.getMid()));
+                        graphGenerator.createGraphStream(email);
+                        System.out.println("processed email count: "+ graphGenerator.getProcessedEmailCount());
+                        if (helper.isDebugMode(config) && graphGenerator.getProcessedEmailCount() > Integer.parseInt(config.getProperty("graph-size")))
+                            break;
+
+                    }
+                }
 
             }
             this.getConfiguration().setPatterns(graphGenerator.getGraphStream());

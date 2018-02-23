@@ -15,9 +15,10 @@ public class RecipientEmployee extends Employee {
     @Override
     public String toString() {
         return "RecipientEmployee{" +
-                "receptionMethod='" + receptionMethod + '\'' +
+                "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
+                ", emailId='" + emailId + '\'' +
                 ", status='" + status + '\'' +
                 '}';
     }
