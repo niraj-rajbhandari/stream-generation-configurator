@@ -22,14 +22,14 @@ public class EmailGraphGenerator extends GraphGenerator<Email> {
     private Map<Integer, Map<Integer, Vertex>> recipientVertexLink;
     private EmployeeRepository employeeRepository;
     private EmailRepository emailRepository;
-    private int processedEmailCount;
+    private Integer processedEmailCount;
 
     public EmailGraphGenerator() throws IOException, TimeoutException, SQLException {
         super();
         recipientVertexLink = new HashMap<>();
         employeeRepository = new EmployeeRepository();
         emailRepository = new EmailRepository();
-        processedEmailCount = 0;
+        processedEmailCount = 1;
     }
 
     public int getProcessedEmailCount() {
@@ -39,8 +39,7 @@ public class EmailGraphGenerator extends GraphGenerator<Email> {
     public void createGraphStream(Email email) throws IOException {
 
         try {
-            String graphId = "1";
-
+            String graphId = processedEmailCount.toString();
             Vertex messageStateVertex = _createMessageStateVertex(EmailStateTypeEnum.ORIGINAL, graphId);
 
             Vertex senderVertex = _createOriginalSenderVertex(email.getOriginalSender(), graphId);
@@ -58,14 +57,15 @@ public class EmailGraphGenerator extends GraphGenerator<Email> {
 
     private void _createRecipientGraph(List<RecipientEmployee> recipients, String graphId, Vertex senderVertex,
                                        Message message, Vertex messageStateVertex) {
-        Map<String, String> timeVertexAttributes = getAttribute(Helper.getInstance().getTimeBucket(message.getDatetime()), graphId);
-        Vertex timeVertex = createVertex(timeVertexAttributes);
 
-
-        Map<String, String> dayVertexAttributes = getAttribute(Helper.getInstance().getDayBucket(message.getDatetime()), graphId);
-        Vertex dayVertex = createVertex(dayVertexAttributes);
         Map<Integer, Vertex> messageRecipientVertexLink = new HashMap<>();
         for (RecipientEmployee recipient : recipients) {
+            Map<String, String> timeVertexAttributes = getAttribute(Helper.getInstance().getTimeBucket(message.getDatetime()), graphId);
+            Vertex timeVertex = createVertex(timeVertexAttributes);
+
+
+            Map<String, String> dayVertexAttributes = getAttribute(Helper.getInstance().getDayBucket(message.getDatetime()), graphId);
+            Vertex dayVertex = createVertex(dayVertexAttributes);
             String comment = "//Recipient Message ID: " + message.getMessageId() + "-- id: " + message.getMid();
             Vertex messageVertex = _createMessageVertex(graphId,recipient.getReceptionMethod(),comment);
 
