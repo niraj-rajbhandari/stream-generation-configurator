@@ -36,6 +36,8 @@ public abstract class GraphGenerator<T> {
     protected List<Edge> edgeList;
     protected QueueService queueService;
 
+    protected boolean differentGraphs;
+
     private StreamConfigurationPattern streamConfigurationPattern;
 
     protected GraphGenerator() throws IOException, TimeoutException {
@@ -48,6 +50,9 @@ public abstract class GraphGenerator<T> {
         this.streamConfigurationPattern = new StreamConfigurationPattern();
     }
 
+    public boolean isDifferentGraphs() {
+        return differentGraphs;
+    }
 
     public List<Vertex> getVertexList() {
         return vertexList;
@@ -78,15 +83,13 @@ public abstract class GraphGenerator<T> {
         return vertex;
     }
 
-    protected Edge createEdge(Vertex source, Vertex destination, EdgeType edgeType, String label, String graphId) {
-
+    protected Edge createEdge(Vertex source, Vertex destination, EdgeType edgeType, Map<String, String> attributes){
         Edge edge = new Edge();
         edge.setId(Integer.toString(this.currentGraphEdgeIndex++));
         edge.setSource(source.getId());
         edge.setTarget(destination.getId());
         edge.setDirected(EdgeType.DIRECTED == edgeType);
 
-        Map<String, String> attributes = this.getAttribute(label, graphId);
         attributes.put(GRAPH_EDGE_SOURCE_INDEX, edge.getSource());
         attributes.put(GRAPH_EDGE_TARGET_INDEX, edge.getTarget());
         attributes.put(ID_INDEX, edge.getId());
@@ -97,6 +100,11 @@ public abstract class GraphGenerator<T> {
         queueService.publishGraphToQueue(edge); //To publish to the queue
 
         return edge;
+    }
+
+    protected Edge createEdge(Vertex source, Vertex destination, EdgeType edgeType, String label, String graphId) {
+        Map<String, String> attributes = this.getAttribute(label, graphId);
+        return createEdge(source,destination,edgeType,attributes);
     }
 
     protected Map<String, String> getAttribute(String label, String graphId) {
