@@ -2,6 +2,7 @@ package org.niraj.stream.parser;
 
 import org.niraj.stream.parser.configuration.ConfigReader;
 import org.niraj.stream.parser.configuration.DataStreamConfigurator;
+import org.niraj.stream.parser.domain.app.AppStreamConfigurator;
 import org.niraj.stream.parser.domain.email.EnronEmailStreamConfigurator;
 import org.niraj.stream.parser.domain.email.pojo.Email;
 import org.niraj.stream.parser.domain.medicare.claim.ClaimDataStreamConfigurator;
@@ -19,7 +20,7 @@ public class GraphParser {
     private static final String DATA_TYPE_KEY = "data-type";
     private static final String DATA_TYPE_EMAIL = "email";
     private static final String DATA_TYPE_MEDICARE = "medicare";
-    private static final String DATA_TYPE_APPLICATION = "application";
+    private static final String DATA_TYPE_APPLICATION = "application_processing";
 
     public static void main(String... args) {
         try {
@@ -29,7 +30,8 @@ public class GraphParser {
             } else if (dataType.equals(DATA_TYPE_MEDICARE)) {
                 GraphParser.claimGraphGenerator();
             } else if (dataType.equals(DATA_TYPE_APPLICATION)) {
-
+                System.out.println("Application Processing");
+                GraphParser.appProcessingGraphGenerator();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,6 +63,20 @@ public class GraphParser {
                     configReader.getProperty(OUTPUT_FILE));
             configurator.createDataStreamConfiguration();
         } catch (IOException | TimeoutException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void appProcessingGraphGenerator(String... args) {
+        try {
+            ConfigReader configReader = ConfigReader.getInstance();
+            DataStreamConfigurator<String> appDataStreamConfigurator =
+                    new AppStreamConfigurator(configReader.getProperty(INPUT_DATA_KEY),
+                            configReader.getProperty(OUTPUT_FILE));
+            appDataStreamConfigurator.createDataStreamConfiguration();
+            appDataStreamConfigurator.createJson();
+
+        } catch (IOException | IllegalArgumentException | IllegalAccessException | TimeoutException e) {
             e.printStackTrace();
         }
     }
